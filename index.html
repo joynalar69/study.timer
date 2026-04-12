@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <title>📚 Study Timer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+  @font-face {
+  font-family: 'Kalpurush';
+  src: url('Kalpurush.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+  .history-total {
+  font-weight: bold;        /* bold text */
+  color: #2E86C1;           /* professional blue */
+  margin-top: 5px;          /* spacing from previous entries */
+  font-size: 14px;          /* readable size */
+}
+  #closeHistory{
+position: sticky; top: 10px; right: 10px; background: #f44336; color: #fff; border: none; font-size: 18px; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+    body { font-family: 'Kalpurush', sans-serif; background: #f3f9fb; padding: 20px; text-align: center; 
+	  font-size: 18px;
+	}
+    h1 { color: #2c3e50; margin-bottom: 8px; }
+    .controls-top { max-width: 720px; margin: 0 auto 10px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+    select, input[type="text"], input[type="number"], button {
+      padding: 10px; border-radius:6px; border:1px solid #ccc; box-sizing:border-box;
+    }
+    select, input[type="text"], input[type="number"] { width: 180px; }
+    button.primary { background:#3498db; color:white; border:none; font-weight:600; cursor:pointer; }
+    button.secondary { background:#27ae60; color:white; border:none; cursor:pointer; }
+    button.warn { background:#e74c3c; color:white; border:none; cursor:pointer; }
+    .subject-list { margin-top: 18px; max-width:720px; margin-left:auto; margin-right:auto; text-align:left; }
+    .subject-item {
+      background: white; padding: 12px; margin: 10px 0;
+      border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      position: relative; display:flex; gap:12px; align-items:center;
+    }
+    .subject-meta { flex: 1; }
+    .subject-name { font-weight:700; font-size:16px; color:#2c3e50; display:flex; justify-content:space-between; align-items:center; gap:12px;}
+    .subject-time { font-size:13px; color:#666; }
+    .progress { height: 12px; background: #eee; border-radius: 8px; overflow: hidden; margin-top:8px; }
+    .progress-bar { height:100%; width:0%; background:#27ae60; transition: width 0.4s linear; }
+    .item-controls { display:flex; gap:8px; }
+    .icon-btn { border:none; background:transparent; cursor:pointer; font-size:16px; padding:6px; border-radius:6px; }
+    .icon-btn.play { background:#2d9cdb; color:white; }
+    .icon-btn.pause { background:#f1c40f; color:#111; }
+    .remove-btn { position: absolute; top: -10px; right: -10px; background: #f44336; color: #fff; border: none; font-size: 18px; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+    .history-btn { background:#8e44ad; color:white; border:none; padding:10px 14px; border-radius:6px; cursor:pointer; }
+    .timer-display { margin-top:14px; font-weight:700; color:#e67e22; }
+    #stopAlarmBtn { display:none; background:#e74c3c; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; margin-top:8px; }
+    /* popup */
+    #overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:999; }
+    #historyPopup { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:90%; max-width:640px; height:70%; background:white; border-radius:10px; padding:0px 16px; z-index:1000; overflow:auto; box-shadow:0 8px 30px rgba(0,0,0,0.2); text-align:left; }
+    #historyPopup h2 { display:flex; justify-content:space-between; align-items:center; }
+    .history-entry { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #f0f0f0; }
+    .del-btn { background:none; border:none; color:red; cursor:pointer; }
+    @media (max-width:520px){
+      select, input[type="text"], input[type="number"] { width:100%; }
+      .controls-top { flex-direction:column; gap:6px; }
+    }
+/* Author Button */
+  .author-btn {
+    display: inline-flex;
+    align-items: center;
+    background: #2196f3;
+    color: #fff;
+    padding: 8px 14px;
+    font-size: 16px!important;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    transition: background 0.3s;
+  }
+  .author-btn:hover {
+    background: #1976d2;
+  }
+  .author-btn span {
+    margin-left: 8px;
+  }
+  .btn-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .button-center {
+    display: flex;
+    justify-content: center;
+    margin-top: 0px;
+margin-bottom:20px;
+  }
+
+  /* Popup Modal */
+  #authorModal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  .modal-content {
+    background: #ffffff;
+    padding: 25px;
+    border-radius: 15px;
+    max-width: 450px;
+    width: 90%;
+	height:90%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  #closeBtn {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    font-size: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #444;
+  }
+  .author-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #2196f3;
+    margin-bottom: 15px;
+  }
+  .author-name {
+    font-size: 24px;
+    color: #2196f3;
+    margin: 5px 0;
+  }
+  .author-info {
+    color: #555;
+    font-size: 15px;
+    margin-bottom: 15px;
+  }
+  .description {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: left;
+    font-size: 15px;
+    color: #333;
+    line-height: 1.6;
+    border-left: 5px solid #2196f3;
+  }
+  .other-details {
+    font-size: 15px;
+    margin: 10px 0;
+    color: #444;
+  }
+  .other-details a {
+    color: #2196f3;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  /* Social Icons */
+  .social-links {
+    margin-top: 15px;
+  }
+  .social-links a {
+    display: inline-block;
+    margin: 8px;
+    background: #2196f3;
+    border-radius: 50%;
+    padding: 8px;
+  }
+  .social-links img {
+    width: 32px;
+    height: 32px;
+    display: block;
+  }
+
+  </style>
+</head>
+<body>
+
+<h1>📖 Study Timer</h1>
+<!-- Author Button Center -->
+<div class="button-center">
+  <button id="authorBtn" class="author-btn">
+    <img src="user.png" alt="Author Icon" class="btn-img">
+    <span>Developer Info</span>
+  </button>
+</div>
+
+<!-- Modal -->
+<div id="authorModal">
+  <div class="modal-content">
+    <button id="closeBtn">&times;</button>
+
+    <img src="Author.webp" alt="Md Joynal Abedin" class="author-img">
+    <h2 class="author-name">Md Joynal Abedin</h2>
+    <div class="author-info"> Graphics & Web Designer</div>
+    <div class="author-info">Graduated from Islamic Arabic University</div>
+
+    <div class="description">
+  ⏳ Study Timer App helps students and teachers manage their study sessions more effectively. You can add subjects, set custom study times, track progress with a live timer and progress bar, pause or resume anytime, and view your daily history. It also has an alarm to notify when time is up. Simple, clean, and designed to boost focus and productivity.
+          </div>
+
+    <div class="other-details">
+      <p><strong>Website:</strong> <a href="https://aragency1.blogspot.com" target="_blank">aragency1.blogspot.com</a></p>
+      <p><strong>Availability:</strong> Sunday to Wednesday, 8 AM - 9 PM</p>
+    </div>
+
+   <div class="social-links">
+      <a href="https://facebook.com/joynalar69" target="_blank">
+        <img src="facebook.png" alt="Facebook">
+      </a>
+      <a href="https://wa.me/8801679338669" target="_blank">
+        <img src="whatsapp.png" alt="WhatsApp">
+      </a>
+      <a href="https://t.me/JoynalAr69" target="_blank">
+        <img src="telegram.png" alt="Telegram">
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="controls-top">
+ <select id="subjectSelect" style="width:80%!important">
+    <option value="">সাবজেক্ট নির্বাচন করুন</option>
+    <option value="বাংলা">বাংলা</option>
+    <option value="ইংরেজি">ইংরেজি</option>
+    <option value="গণিত">গণিত</option>
+    <option value="সাধারণ জ্ঞান">সাধারণ জ্ঞান</option>
+    <option value="বিজ্ঞান">বিজ্ঞান</option>
+    <option value="আই.সি.টি">আই.সি.টি</option>
+    <option value="আরবী">আরবী</option>
+    <option value="কুরআন">কুরআন</option>
+    <option value="হাদীস">হাদীস</option>
+    <option value="অন্যান্য">অন্যান্য</option>
+  </select>
+
+  <input type="text" id="customSubjectInput" placeholder="কাস্টম সাবজেক্ট লিখুন" style="width:80%!important">
+
+  <select id="timeInput" style="width:80%!important" style="width:80%!important">
+    <option value="">সময় (মিনিট)</option>
+    <option value="5">৫</option>
+    <option value="10">১০</option>
+    <option value="15">১৫</option>
+    <option value="20">২০</option>
+    <option value="25">২৫</option>
+    <option value="30">৩০</option>
+    <option value="45">৪৫</option>
+    <option value="60">৬০</option>
+  <option value="90">৯০</option>
+  <option value="120">১২০</option>
+  </select>
+
+  <input type="number" id="customTimeInput" placeholder="নিজস্ব সময় (মিনিট)" min="1" style="width:80%!important">
+
+  <button class="primary" onclick="addSubject()" style="width:80%!important">+ যুক্ত করুন</button>
+</div>
+
+<div style="max-width:720px;margin:0 auto; display:flex; gap:8px; justify-content:center;">
+  <button class="secondary" onclick="startStudy()">▶️ Start</button>
+  <button class="" onclick="togglePauseResumeMain()" id="pauseResumeBtn" disabled>⏸ Pause</button>
+  <button class="warn" onclick="resetStudy()">🔄 Reset</button>
+  <button class="history-btn" onclick="openHistory()">📜 History</button>
+</div>
+
+<div class="timer-display" id="timerDisplay">⏳ টাইমার বন্ধ আছে</div>
+
+<div class="subject-list" id="subjectList"></div>
+
+<audio id="alarmSound" loop>
+  <source src="alarm.mp3" type="audio/mpeg">
+</audio>
+<button id="stopAlarmBtn" onclick="stopAlarm()">⏹ Stop Alarm</button>
+
+<div id="overlay"></div>
+<div id="historyPopup">
+  <h2>📜 পড়াশোনার হিস্টোরি <button id="closeHistory" onclick="closeHistory()" style="background:#f44336;color:white;border:none;padding:6px 8px;border-radius:6px;cursor:pointer">×</button></h2>
+  <div id="historyContent"></div>
+</div>
+
+<script>
+let subjects = JSON.parse(localStorage.getItem('studySubjects')) || [];
+let historyData = JSON.parse(localStorage.getItem('studyHistory')) || {};
+let currentIndex = -1;
+let tickInterval = null;
+let lastTick = null;
+let isPausedGlobal = false;
+
+function renderSubjects(){
+  const list = document.getElementById('subjectList');
+  list.innerHTML = '';
+  subjects.forEach((s, i) => {
+    const percent = s.total > 0 ? Math.round(100*(s.total - s.left)/s.total) : 0;
+    list.innerHTML += `
+      <div class="subject-item" id="sub-${i}">
+        <button class="remove-btn" title="Remove" onclick="removeSubject(${i})">×</button>
+        <div class="subject-meta">
+          <div class="subject-name">
+            <span>${i+1}. ${escapeHtml(s.name)}</span>
+            <span class="subject-time" id="time-${i}">${formatTime(s.left)}</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" id="bar-${i}" style="width:${percent}%;"></div>
+          </div>
+        </div>
+        <div class="item-controls">
+          <button class="icon-btn ${s.status==='running'?'pause':'play'}" id="playbtn-${i}" title="Play / Resume" onclick="startSubject(${i})">
+            ${s.status==='running' ? '⏸' : '▶️'}
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+  const mainPause = document.getElementById('pauseResumeBtn');
+  mainPause.disabled = (currentIndex === -1);
+  mainPause.innerText = isPausedGlobal ? '⏯ Resume' : '⏸ Pause';
+}
+
+function escapeHtml(text){ return text.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c]); }
+function formatTime(sec){ if(sec <= 0) return '0:00'; const m = Math.floor(sec/60), s = sec%60; return `${m}:${s<10?'0'+s:s}`; }
+
+function addSubject(){
+  const custom = document.getElementById('customSubjectInput').value.trim();
+  const dropdown = document.getElementById('subjectSelect').value;
+  const customTime = parseInt(document.getElementById('customTimeInput').value);
+  let timeMinutes = parseInt(document.getElementById('timeInput').value);
+  const name = custom || dropdown;
+  if(!name) return alert("দয়া করে সাবজেক্ট নির্বাচন বা লিখুন");
+  if(!isNaN(customTime) && customTime>0) timeMinutes = customTime;
+  if(!timeMinutes || timeMinutes<=0) return alert("সঠিক সময় দিন (মিনিট)");
+
+  const totalSec = timeMinutes * 60;
+  subjects.push({name, total: totalSec, left: totalSec, status: 'idle'});
+  localStorage.setItem('studySubjects', JSON.stringify(subjects));
+  document.getElementById('customSubjectInput').value='';
+  document.getElementById('subjectSelect').value='';
+  document.getElementById('customTimeInput').value='';
+  renderSubjects();
+}
+
+function removeSubject(index){
+  if(index < 0 || index >= subjects.length) return;
+  const wasRunning = subjects[index].status === 'running';
+  if(wasRunning) stopTickInterval();
+  subjects.splice(index,1);
+  if(wasRunning){
+    if(subjects.length > 0){
+      const next = Math.min(index, subjects.length-1);
+      startSubject(next);
+    } else {
+      currentIndex = -1;
+      renderSubjects();
+      updateTimerDisplay();
+      saveSubjectsToStorage();
+      return;
+    }
+  }
+  if(currentIndex > index) currentIndex--;
+  saveSubjectsToStorage();
+  renderSubjects();
+}
+
+function startStudy(){
+  if(subjects.length===0){ alert("দয়া করে অন্তত একটি বিষয় যুক্ত করুন!"); return;}
+  const runningIdx = subjects.findIndex(s => s.status === 'running');
+  if(runningIdx !== -1){ currentIndex = runningIdx; renderSubjects(); return; }
+  const next = subjects.findIndex(s => s.left > 0);
+  if(next !== -1) startSubject(next);
+}
+
+function startSubject(index){
+  if(index < 0 || index >= subjects.length) return;
+  if(subjects[index].status === 'running'){ pauseSubject(index); return; }
+  subjects.forEach((s,i) => { if(i !== index && s.status === 'running') s.status = 'paused'; });
+  subjects[index].status = 'running';
+  currentIndex = index;
+  isPausedGlobal = false;
+  lastTick = Date.now();
+  startTickInterval();
+  updateUIOnce();
+  saveSubjectsToStorage();
+  renderSubjects();
+}
+
+function pauseSubject(index){
+  if(index !== currentIndex) return;
+  subjects[index].status = 'paused';
+  isPausedGlobal = true;
+  stopTickInterval();
+  saveSubjectsToStorage();
+  renderSubjects();
+}
+
+function togglePauseResumeMain(){
+  if(currentIndex === -1) return;
+  if(isPausedGlobal){
+    subjects[currentIndex].status = 'running';
+    isPausedGlobal = false;
+    lastTick = Date.now();
+    startTickInterval();
+  } else {
+    subjects[currentIndex].status = 'paused';
+    isPausedGlobal = true;
+    stopTickInterval();
+  }
+  saveSubjectsToStorage();
+  renderSubjects();
+}
+
+function completeSubject(index){
+  if(index < 0 || index >= subjects.length) return;
+  subjects[index].status = 'done';
+  subjects[index].left = 0;
+  saveHistory(subjects[index].name, Math.round(subjects[index].total/60));
+  saveSubjectsToStorage();
+  const alarm = document.getElementById('alarmSound'); alarm.play();
+  document.getElementById('stopAlarmBtn').style.display = 'inline-block';
+  let next = subjects.findIndex((s,i)=> i>index && s.left>0);
+  if(next === -1) next = subjects.findIndex(s=>s.left>0);
+  if(next !== -1) startSubject(next);
+  else { stopTickInterval(); currentIndex=-1; updateTimerDisplay("✅ সব পড়া শেষ হয়েছে!"); renderSubjects(); }
+}
+
+function startTickInterval(){ stopTickInterval(); lastTick=Date.now(); tickInterval=setInterval(tick,1000);}
+function stopTickInterval(){ if(tickInterval){ clearInterval(tickInterval); tickInterval=null; } }
+function tick(){
+  if(currentIndex === -1) { stopTickInterval(); return; }
+  const now = Date.now(); const elapsedSec = Math.floor((now-lastTick)/1000);
+  if(elapsedSec<=0) return;
+  lastTick = now;
+  const s = subjects[currentIndex];
+  if(!s || s.status!=='running') { stopTickInterval(); return; }
+  s.left = Math.max(0, s.left - elapsedSec);
+  updateUIOnce();
+  if(s.left<=0) completeSubject(currentIndex);
+  else saveSubjectsToStorage();
+}
+
+function updateUIOnce(){
+  subjects.forEach((s,i)=>{
+    const timeEl = document.getElementById('time-'+i);
+    const barEl = document.getElementById('bar-'+i);
+    if(timeEl) timeEl.innerText = formatTime(s.left);
+    if(barEl){ const percent = s.total > 0 ? Math.round(100*(s.total - s.left)/s.total) : 0; barEl.style.width = percent + '%'; }
+  });
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay(textOverride){
+  const td = document.getElementById('timerDisplay');
+  if(textOverride) { td.innerText = textOverride; return; }
+  if(currentIndex===-1){ td.innerText='⏳ টাইমার বন্ধ আছে'; return; }
+  const s = subjects[currentIndex];
+  td.innerText = `📖 পড়ছেন: ${s.name} | ⏰ বাকি: ${formatTime(s.left)}`;
+}
+// Save subjects to localStorage
+function saveSubjectsToStorage() {
+  localStorage.setItem('studySubjects', JSON.stringify(subjects));
+}
+
+// Save study session to history
+function saveHistory(subject, minutes) {
+  const today = new Date().toLocaleDateString('bn-BD');
+  if (!historyData[today]) historyData[today] = [];
+  historyData[today].push({ subject, minutes });
+  localStorage.setItem('studyHistory', JSON.stringify(historyData));
+}
+
+// Open history popup
+function openHistory() {
+  let content = "";
+  const keys = Object.keys(historyData).reverse();
+
+  if (keys.length === 0) {
+    content = "<p> কোন হিস্টোরি পাওয়া যায়নি।</p>";
+  } else {
+    keys.forEach(date => {
+      let totalMinutes = 0; // total minutes for the day
+      content += `<h3>📅 ${date}</h3>`;
+      historyData[date].forEach((item, index) => {
+        totalMinutes += item.minutes; // sum minutes
+        content += `
+          <div class="history-entry">
+            <span>📖 ${item.subject} - ⏰ ${item.minutes} মিনিট</span>
+            <button class="del-btn" onclick="deleteHistory('${date}',${index})">❌</button>
+          </div>`;
+      });
+      // Calculate hours and minutes
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      // Display total time (CSS will style .history-total)
+      content += `<div class="history-total">🕒 মোট পড়েছেন: ${hours} ঘন্টা ${minutes} মিনিট</div>`;
+    });
+  }
+
+  document.getElementById('historyContent').innerHTML = content;
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('historyPopup').style.display = 'block';
+}
+
+// Delete a specific history entry
+function deleteHistory(date, index) {
+  historyData[date].splice(index, 1);
+  if (historyData[date].length === 0) delete historyData[date];
+  localStorage.setItem('studyHistory', JSON.stringify(historyData));
+  openHistory(); // refresh
+}
+
+// Close history popup
+function closeHistory() {
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('historyPopup').style.display = 'none';
+}
+
+function resetStudy(){
+  if(!confirm('সব সাবজেক্ট মুছে ফেলতে চাও?')) return;
+  stopTickInterval();
+  subjects=[]; currentIndex=-1;
+  localStorage.removeItem('studySubjects');
+  renderSubjects(); updateTimerDisplay(); stopAlarm(); saveSubjectsToStorage();
+}
+
+function stopAlarm(){ const alarm=document.getElementById('alarmSound'); alarm.pause(); alarm.currentTime=0; document.getElementById('stopAlarmBtn').style.display='none'; }
+
+window.onload=()=>{
+  subjects = subjects.map(s=>({ name: s.name||'অনন্য', total:s.total||(s.time?s.time:(s.left||0)), left:s.left||0, status: 'paused'}));
+  currentIndex = -1; renderSubjects(); updateTimerDisplay();
+};
+window.addEventListener('beforeunload', ()=>{ saveSubjectsToStorage(); });
+
+const authorBtn = document.getElementById('authorBtn');
+const authorModal = document.getElementById('authorModal');
+const closeBtn = document.getElementById('closeBtn');
+
+authorBtn.addEventListener('click', () => {
+  authorModal.style.display = 'flex';
+});
+
+closeBtn.addEventListener('click', () => {
+  authorModal.style.display = 'none';
+});
+
+authorModal.addEventListener('click', function(e) {
+  if (e.target === authorModal) {
+    authorModal.style.display = 'none';
+  }
+})
+</script>
+
+</body>
+</html>

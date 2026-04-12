@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>📚 স্মার্ট স্টাডি টাইমার | পড়ার সময়সূচি</title>
+  <style>
+  /* ========== RESET & GLOBAL ========== */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  @font-face {
+    font-family: 'Kalpurush';
+    src: url('Kalpurush.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  body {
+    font-family: 'Kalpurush', 'Segoe UI', Roboto, system-ui, sans-serif;
+    background: linear-gradient(145deg, #eef5f7 0%, #e0eef2 100%);
+    padding: 20px 16px 40px;
+    text-align: center;
+    font-size: 18px;
+    line-height: 1.4;
+    min-height: 100vh;
+  }
+
+  /* main container */
+  .app-container {
+    max-width: 860px;
+    margin: 0 auto;
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(2px);
+    border-radius: 48px 32px 48px 32px;
+    padding: 20px 18px 32px;
+    box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+    transition: all 0.2s ease;
+  }
+
+  h1 {
+    color: #1e4668;
+    margin-bottom: 6px;
+    font-size: 1.9rem;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* author button */
+  .button-center {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0 12px 0;
+  }
+  .author-btn {
+    display: inline-flex;
+    align-items: center;
+    background: #2196f3;
+    color: #fff;
+    padding: 8px 18px;
+    font-size: 1rem !important;
+    border: none;
+    border-radius: 40px;
+    cursor: pointer;
+    box-shadow: 0 6px 12px rgba(33,150,243,0.25);
+    transition: all 0.2s;
+    gap: 8px;
+    font-weight: 500;
+  }
+  .author-btn:hover {
+    background: #0b5e9e;
+    transform: translateY(-2px);
+  }
+  .btn-img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: white;
+    object-fit: cover;
+  }
+
+  /* controls row : fully responsive grid */
+  .controls-top {
+    max-width: 100%;
+    margin: 12px auto 18px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    align-items: end;
+  }
+  select, input[type="text"], input[type="number"], button {
+    padding: 12px 12px;
+    border-radius: 28px;
+    border: 1px solid #cbdbe2;
+    font-family: 'Kalpurush', inherit;
+    font-size: 0.95rem;
+    background: #ffffff;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: #2c9cdb;
+    box-shadow: 0 0 0 3px rgba(44,156,219,0.2);
+  }
+  button.primary {
+    background: #2c6e9e;
+    border: none;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+  }
+  button.primary:hover { background: #1f5480; transform: scale(0.98);}
+  button.secondary { background: #2c9c5e; color: white; border: none; }
+  button.warn { background: #dc6b4a; color: white; border: none; }
+  .history-btn { background: #8e6cac; color: white; border: none; }
+
+  /* action row */
+  .action-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin: 18px 0 14px;
+  }
+  .action-row button {
+    flex: 1 0 auto;
+    min-width: 100px;
+    font-weight: 500;
+    background: #f4f7fc;
+    color: #1e4668;
+    border: 1px solid #cbdbe2;
+  }
+  .action-row .secondary { background: #2c9c5e; color: white; border: none; }
+  .action-row .warn { background: #dc6b4a; color: white; }
+  .action-row .history-btn { background: #8e6cac; color: white; }
+
+  .timer-display {
+    background: #1e2f3f;
+    color: #ffde9c;
+    padding: 12px 16px;
+    border-radius: 60px;
+    font-weight: bold;
+    font-size: 1.25rem;
+    letter-spacing: 0.5px;
+    margin: 12px 0 16px;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.2), 0 6px 12px rgba(0,0,0,0.1);
+    text-align: center;
+    word-break: break-word;
+  }
+
+  /* subject list - responsive cards */
+  .subject-list {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .subject-item {
+    background: white;
+    padding: 16px 18px;
+    border-radius: 28px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+    position: relative;
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: all 0.2s;
+    border: 1px solid #e2edf2;
+  }
+  .subject-meta {
+    flex: 3;
+    min-width: 160px;
+  }
+  .subject-name {
+    font-weight: 800;
+    font-size: 1.1rem;
+    color: #1f3e53;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .subject-time {
+    font-size: 0.85rem;
+    background: #eef3fa;
+    padding: 4px 12px;
+    border-radius: 40px;
+    color: #1c6b8f;
+  }
+  .progress {
+    height: 12px;
+    background: #e0eef2;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+  .progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #2c9c5e;
+    transition: width 0.2s linear;
+    border-radius: 20px;
+  }
+  .item-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .icon-btn {
+    border: none;
+    background: #eef3fc;
+    cursor: pointer;
+    font-size: 1.3rem;
+    padding: 8px 14px;
+    border-radius: 40px;
+    font-weight: bold;
+    transition: 0.1s;
+  }
+  .icon-btn.play { background: #2c9cdb; color: white; }
+  .icon-btn.pause { background: #f4b942; color: #2d2b1f; }
+  .remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #f44336;
+    color: white;
+    border: none;
+    font-size: 1.2rem;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+    transition: 0.1s;
+  }
+  .remove-btn:hover { background: #c62828; transform: scale(1.02);}
+
+  /* popup styles (history + modal) */
+  #overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(4px);
+    z-index: 998;
+  }
+  #historyPopup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 92%;
+    max-width: 680px;
+    height: 75%;
+    background: white;
+    border-radius: 32px;
+    padding: 0 6px 20px 20px;
+    z-index: 1000;
+    overflow-y: auto;
+    box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+    text-align: left;
+  }
+  #historyPopup h2 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: white;
+    padding: 16px 16px 10px 0;
+    margin: 0;
+    border-bottom: 2px solid #e2e8f0;
+    z-index: 5;
+  }
+  #closeHistory {
+    background: #f44336;
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    cursor: pointer;
+  }
+  .history-entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 8px;
+    border-bottom: 1px solid #edf2f7;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .del-btn {
+    background: #fce4e4;
+    border: none;
+    color: #c0392b;
+    border-radius: 40px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .history-total {
+    font-weight: 800;
+    color: #1f6392;
+    margin: 14px 0 18px 0;
+    font-size: 1rem;
+    background: #e9f2f9;
+    padding: 8px 12px;
+    border-radius: 36px;
+    text-align: center;
+  }
+
+  /* MODAL STYLES (author) */
+  #authorModal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.65);
+    justify-content: center;
+    align-items: center;
+    z-index: 1100;
+    backdrop-filter: blur(5px);
+  }
+  .modal-content {
+    background: #ffffff;
+    padding: 24px 20px 30px;
+    border-radius: 48px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 25px 45px rgba(0,0,0,0.3);
+  }
+  #closeBtn {
+    position: absolute;
+    top: 16px;
+    right: 22px;
+    font-size: 28px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #5a6e7a;
+  }
+  .author-img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #2196f3;
+    margin-bottom: 12px;
+  }
+  .author-name { font-size: 1.7rem; color: #2196f3; margin: 8px 0 0; }
+  .author-info { color: #4a627a; margin: 6px 0; font-size: 0.9rem; }
+  .description {
+    background: #eef3fc;
+    padding: 16px;
+    border-radius: 32px;
+    margin: 18px 0;
+    text-align: left;
+    font-size: 0.9rem;
+    border-left: 6px solid #2196f3;
+  }
+  .other-details { font-size: 0.85rem; margin-top: 8px; }
+  .social-links { display: flex; justify-content: center; gap: 14px; margin-top: 16px; }
+  .social-links a {
+    display: inline-flex;
+    background: #2196f3;
+    border-radius: 50%;
+    padding: 6px;
+    transition: transform 0.1s;
+  }
+  .social-links img { width: 32px; height: 32px; display: block; }
+
+  /* responsive tweaks */
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .app-container { padding: 16px; }
+    .subject-item { flex-direction: column; align-items: stretch; padding: 18px 14px; }
+    .item-controls { justify-content: flex-end; margin-top: 8px; }
+    .subject-name { font-size: 1rem; }
+    .timer-display { font-size: 1rem; }
+    .controls-top { grid-template-columns: 1fr; gap: 10px; }
+    .action-row button { min-width: 70px; font-size: 0.85rem; }
+    .icon-btn { padding: 6px 12px; }
+  }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 1.6rem; }
+    .modal-content { padding: 20px; }
+  }
+
+  button:active { transform: scale(0.97); }
+  #stopAlarmBtn {
+    display: none;
+    background: #e67e22;
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 60px;
+    margin: 8px auto 0;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <h1>📚 স্মার্ট স্টাডি টাইমার</h1>
+  <div class="button-center">
+    <button id="authorBtn" class="author-btn">
+      <img src="user.png" alt="Author Icon" class="btn-img">
+      <span>ডেভেলপার পরিচিতি</span>
+    </button>
+  </div>
+
+  <!-- add subject controls -->
+  <div class="controls-top">
+    <select id="subjectSelect">
+      <option value="">সাবজেক্ট নির্বাচন করুন</option>
+      <option value="বাংলা">বাংলা</option>
+      <option value="ইংরেজি">ইংরেজি</option>
+      <option value="গণিত">গণিত</option>
+      <option value="সাধারণ জ্ঞান">সাধারণ জ্ঞান</option>
+      <option value="বিজ্ঞান">বিজ্ঞান</option>
+      <option value="আই.সি.টি">আই.সি.টি</option>
+      <option value="আরবী">আরবী</option>
+      <option value="কুরআন">কুরআন</option>
+      <option value="হাদীস">হাদীস</option>
+      <option value="অন্যান্য">অন্যান্য</option>
+    </select>
+    <input type="text" id="customSubjectInput" placeholder="কাস্টম সাবজেক্ট লিখুন">
+    <select id="timeInput">
+      <option value="">সময় (মিনিট)</option>
+      <option value="5">৫</option><option value="10">১০</option><option value="15">১৫</option>
+      <option value="20">২০</option><option value="25">২৫</option><option value="30">৩০</option>
+      <option value="45">৪৫</option><option value="60">৬০</option><option value="90">৯০</option>
+      <option value="120">১২০</option>
+    </select>
+    <input type="number" id="customTimeInput" placeholder="নিজস্ব সময় (মিনিট)" min="1">
+    <button class="primary" onclick="addSubject()">+ যুক্ত করুন</button>
+  </div>
+
+  <!-- main action buttons -->
+  <div class="action-row">
+    <button class="secondary" onclick="startStudy()">▶️ শুরু করুন</button>
+    <button id="pauseResumeBtn" onclick="togglePauseResumeMain()" disabled>⏸ বিরতি</button>
+    <button class="warn" onclick="resetStudy()">🔄 রিসেট</button>
+    <button class="history-btn" onclick="openHistory()">📜 ইতিহাস</button>
+  </div>
+
+  <div class="timer-display" id="timerDisplay">⏳ টাইমার বন্ধ আছে</div>
+  <div class="subject-list" id="subjectList"></div>
+
+  <audio id="alarmSound" loop>
+    <source src="alarm.mp3" type="audio/mpeg">
+  </audio>
+  <button id="stopAlarmBtn" onclick="stopAlarm()">⏹ অ্যালার্ম বন্ধ করুন</button>
+</div>
+
+<div id="overlay"></div>
+<div id="historyPopup">
+  <h2>📜 পড়াশোনার হিস্টোরি <button id="closeHistory" onclick="closeHistory()">✖</button></h2>
+  <div id="historyContent"></div>
+</div>
+
+<div id="authorModal">
+  <div class="modal-content">
+    <button id="closeBtn">&times;</button>
+    <img src="Author.webp" alt="Md Joynal Abedin" class="author-img">
+    <h2 class="author-name">মোঃ জয়নাল আবেদীন</h2>
+    <div class="author-info">গ্রাফিক্স ও ওয়েব ডিজাইনার</div>
+    <div class="author-info">ইসলামি আরবি বিশ্ববিদ্যালয় থেকে স্নাতক</div>
+    <div class="description">
+      📖 স্টাডি টাইমার শিক্ষার্থী ও শিক্ষকদের পড়ার সময় কার্যকরভাবে পরিচালনায় সহায়তা করে। আপনি বিষয় যুক্ত করতে পারেন, কাস্টম সময় সেট করতে পারেন, লাইভ টাইমার ও প্রগ্রেস বার দেখতে পারেন। পজ, রিজিউম, এবং অ্যালার্ম নোটিফিকেশন সহ প্রতিদিনের অধ্যায়নের ইতিহাস সংরক্ষণ করে। ফোকাস বাড়াতে আধুনিক ও সহজ ডিজাইন।
+    </div>
+    <div class="other-details">
+      <p>🌐 ওয়েবসাইট: <a href="https://aragency1.blogspot.com" target="_blank">aragency1.blogspot.com</a></p>
+      <p>📅 উপলব্ধতা: রবিবার থেকে বুধবার, সকাল ৮টা - রাত ৯টা</p>
+    </div>
+    <div class="social-links">
+      <a href="https://facebook.com/joynalar69" target="_blank"><img src="facebook.png" alt="Facebook"></a>
+      <a href="https://wa.me/8801679338669" target="_blank"><img src="whatsapp.png" alt="WhatsApp"></a>
+      <a href="https://t.me/JoynalAr69" target="_blank"><img src="telegram.png" alt="Telegram"></a>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- Core Data ----------
+let subjects = JSON.parse(localStorage.getItem('studySubjects')) || [];
+let historyData = JSON.parse(localStorage.getItem('studyHistory')) || {};
+let currentIndex = -1;
+let tickInterval = null;
+let lastTick = null;
+let isPausedGlobal = false;
+
+// ---------- Helper functions ----------
+function formatTime(sec) {
+  if (sec <= 0) return '0:00';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${s < 10 ? '0' + s : s}`;
+}
+function escapeHtml(str) {
+  if(!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+    return c;
+  });
+}
+
+function saveSubjectsToStorage() { localStorage.setItem('studySubjects', JSON.stringify(subjects)); }
+function saveHistory(subject, minutes) {
+  const today = new Date().toLocaleDateString('bn-BD');
+  if (!historyData[today]) historyData[today] = [];
+  historyData[today].push({ subject: subject, minutes: minutes });
+  localStorage.setItem('studyHistory', JSON.stringify(historyData));
+}
+
+// ---------- Render Subjects (fully responsive) ----------
+function renderSubjects() {
+  const list = document.getElementById('subjectList');
+  if (!list) return;
+  list.innerHTML = '';
+  subjects.forEach((s, idx) => {
+    const percent = s.total > 0 ? Math.round(100 * (s.total - s.left) / s.total) : 0;
+    const playPauseIcon = (s.status === 'running') ? '⏸' : '▶️';
+    const btnClass = (s.status === 'running') ? 'pause' : 'play';
+    const timeLeftStr = formatTime(s.left);
+    list.innerHTML += `
+      <div class="subject-item" id="sub-${idx}">
+        <button class="remove-btn" title="সরান" onclick="removeSubject(${idx})">×</button>
+        <div class="subject-meta">
+          <div class="subject-name">
+            <span>${idx+1}. ${escapeHtml(s.name)}</span>
+            <span class="subject-time" id="time-${idx}">${timeLeftStr}</span>
+          </div>
+          <div class="progress">
+            <div class="progress-bar" id="bar-${idx}" style="width:${percent}%;"></div>
+          </div>
+        </div>
+        <div class="item-controls">
+          <button class="icon-btn ${btnClass}" id="playbtn-${idx}" onclick="startSubject(${idx})">${playPauseIcon}</button>
+        </div>
+      </div>
+    `;
+  });
+  const mainPauseBtn = document.getElementById('pauseResumeBtn');
+  if (mainPauseBtn) {
+    mainPauseBtn.disabled = (currentIndex === -1);
+    mainPauseBtn.innerText = isPausedGlobal ? '▶️ চালু করুন' : '⏸ বিরতি';
+  }
+  updateTimerDisplay();
+}
+
+function updateUIOnce() {
+  subjects.forEach((s, i) => {
+    const timeSpan = document.getElementById(`time-${i}`);
+    const barSpan = document.getElementById(`bar-${i}`);
+    if (timeSpan) timeSpan.innerText = formatTime(s.left);
+    if (barSpan) {
+      const percent = s.total > 0 ? Math.round(100 * (s.total - s.left) / s.total) : 0;
+      barSpan.style.width = percent + '%';
+    }
+  });
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay(textOverride) {
+  const td = document.getElementById('timerDisplay');
+  if (textOverride) { td.innerText = textOverride; return; }
+  if (currentIndex === -1 || !subjects[currentIndex]) {
+    td.innerText = '⏳ টাইমার বন্ধ আছে';
+    return;
+  }
+  const s = subjects[currentIndex];
+  td.innerText = `📖 পড়ছেন: ${s.name}  |  ⏰ বাকি: ${formatTime(s.left)}`;
+}
+
+// ---------- Timer & subject actions ----------
+function startTickInterval() {
+  if (tickInterval) clearInterval(tickInterval);
+  lastTick = Date.now();
+  tickInterval = setInterval(tick, 1000);
+}
+function stopTickInterval() {
+  if (tickInterval) { clearInterval(tickInterval); tickInterval = null; }
+}
+function tick() {
+  if (currentIndex === -1) { stopTickInterval(); return; }
+  const now = Date.now();
+  const elapsedSec = Math.floor((now - lastTick) / 1000);
+  if (elapsedSec <= 0) return;
+  lastTick = now;
+  const s = subjects[currentIndex];
+  if (!s || s.status !== 'running') { stopTickInterval(); return; }
+  s.left = Math.max(0, s.left - elapsedSec);
+  updateUIOnce();
+  if (s.left <= 0) completeSubject(currentIndex);
+  else saveSubjectsToStorage();
+}
+
+function completeSubject(index) {
+  if (index < 0 || index >= subjects.length) return;
+  const completedSubject = subjects[index];
+  completedSubject.status = 'done';
+  completedSubject.left = 0;
+  const minutesStudied = Math.round(completedSubject.total / 60);
+  saveHistory(completedSubject.name, minutesStudied);
+  saveSubjectsToStorage();
+  const alarm = document.getElementById('alarmSound');
+  if(alarm) { alarm.play().catch(e=>console.log); }
+  const stopBtn = document.getElementById('stopAlarmBtn');
+  if(stopBtn) stopBtn.style.display = 'inline-block';
+  let nextIndex = subjects.findIndex((s, i) => i > index && s.left > 0);
+  if (nextIndex === -1) nextIndex = subjects.findIndex(s => s.left > 0);
+  if (nextIndex !== -1) startSubject(nextIndex);
+  else {
+    stopTickInterval();
+    currentIndex = -1;
+    updateTimerDisplay("✅ সব পড়া শেষ! দারুণ!");
+    renderSubjects();
+  }
+}
+
+function startSubject(index) {
+  if (index < 0 || index >= subjects.length) return;
+  if (subjects[index].status === 'running') { pauseSubject(index); return; }
+  subjects.forEach((s, i) => { if (i !== index && s.status === 'running') s.status = 'paused'; });
+  subjects[index].status = 'running';
+  currentIndex = index;
+  isPausedGlobal = false;
+  lastTick = Date.now();
+  startTickInterval();
+  saveSubjectsToStorage();
+  renderSubjects();
+}
+
+function pauseSubject(index) {
+  if (index !== currentIndex) return;
+  if (subjects[index]) subjects[index].status = 'paused';
+  isPausedGlobal = true;
+  stopTickInterval();
+  saveSubjectsToStorage();
+  renderSubjects();
+}
+
+function togglePauseResumeMain() {
+  if (currentIndex === -1) return;
+  if (isPausedGlobal) {
+    subjects[currentIndex].status = 'running';
+    isPausedGlobal = false;
+    lastTick = Date.now();
+    startTickInterval();
+  } else {
+    subjects[currentIndex].status = 'paused';
+    isPausedGlobal = true;
+    stopTickInterval();
+  }
+  saveSubjectsToStorage();
+  renderSubjects();
+}
+
+function addSubject() {
+  const custom = document.getElementById('customSubjectInput').value.trim();
+  const dropdown = document.getElementById('subjectSelect').value;
+  let timeMinutes = parseInt(document.getElementById('timeInput').value);
+  const customTime = parseInt(document.getElementById('customTimeInput').value);
+  const name = custom || dropdown;
+  if (!name) return alert("সাবজেক্ট নির্বাচন করুন বা লিখুন!");
+  if (!isNaN(customTime) && customTime > 0) timeMinutes = customTime;
+  if (!timeMinutes || timeMinutes <= 0) return alert("সঠিক সময় দিন (মিনিট)");
+  const totalSec = timeMinutes * 60;
+  subjects.push({ name: name, total: totalSec, left: totalSec, status: 'idle' });
+  localStorage.setItem('studySubjects', JSON.stringify(subjects));
+  document.getElementById('customSubjectInput').value = '';
+  document.getElementById('subjectSelect').value = '';
+  document.getElementById('customTimeInput').value = '';
+  renderSubjects();
+}
+
+function removeSubject(index) {
+  if (index < 0 || index >= subjects.length) return;
+  const wasRunning = subjects[index].status === 'running';
+  if (wasRunning) stopTickInterval();
+  subjects.splice(index, 1);
+  if (wasRunning) {
+    if (subjects.length > 0) {
+      const nextIdx = Math.min(index, subjects.length-1);
+      startSubject(nextIdx);
+    } else {
+      currentIndex = -1;
+      renderSubjects();
+      saveSubjectsToStorage();
+      return;
+    }
+  }
+  if (currentIndex > index) currentIndex--;
+  if (subjects.length === 0) currentIndex = -1;
+  saveSubjectsToStorage();
+  renderSubjects();
+}
+
+function startStudy() {
+  if (subjects.length === 0) { alert("কমপক্ষে একটি বিষয় যুক্ত করুন!"); return; }
+  const runningIdx = subjects.findIndex(s => s.status === 'running');
+  if (runningIdx !== -1) { currentIndex = runningIdx; renderSubjects(); return; }
+  const next = subjects.findIndex(s => s.left > 0);
+  if (next !== -1) startSubject(next);
+}
+
+function resetStudy() {
+  if (!confirm('সমস্ত বিষয় মুছে ফেলতে চান? অগ্রগতি রিসেট হবে')) return;
+  stopTickInterval();
+  subjects = [];
+  currentIndex = -1;
+  localStorage.removeItem('studySubjects');
+  renderSubjects();
+  updateTimerDisplay();
+  stopAlarm();
+  saveSubjectsToStorage();
+}
+
+function stopAlarm() {
+  const alarm = document.getElementById('alarmSound');
+  alarm.pause();
+  alarm.currentTime = 0;
+  const btn = document.getElementById('stopAlarmBtn');
+  if (btn) btn.style.display = 'none';
+}
+
+// ---------- History Popup (responsive) ----------
+function openHistory() {
+  let content = "";
+  const keys = Object.keys(historyData).reverse();
+  if (keys.length === 0) content = "<p>📭 এখনো কোনো ইতিহাস নেই।</p>";
+  else {
+    keys.forEach(date => {
+      let totalMinutes = 0;
+      content += `<h3 style="margin:16px 0 6px 0;">📅 ${date}</h3>`;
+      historyData[date].forEach((item, idx) => {
+        totalMinutes += item.minutes;
+        content += `
+          <div class="history-entry">
+            <span>📖 ${escapeHtml(item.subject)} - ⏰ ${item.minutes} মিনিট</span>
+            <button class="del-btn" onclick="deleteHistoryEntry('${date}', ${idx})">🗑 মুছুন</button>
+          </div>`;
+      });
+      const hours = Math.floor(totalMinutes / 60);
+      const mins = totalMinutes % 60;
+      content += `<div class="history-total">🕒 মোট পড়েছেন: ${hours} ঘন্টা ${mins} মিনিট</div>`;
+    });
+  }
+  document.getElementById('historyContent').innerHTML = content;
+  document.getElementById('overlay').style.display = 'block';
+  document.getElementById('historyPopup').style.display = 'block';
+}
+window.deleteHistoryEntry = function(date, index) {
+  historyData[date].splice(index, 1);
+  if (historyData[date].length === 0) delete historyData[date];
+  localStorage.setItem('studyHistory', JSON.stringify(historyData));
+  openHistory();
+};
+function closeHistory() {
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('historyPopup').style.display = 'none';
+}
+
+// ---------- initialization & modals ----------
+window.onload = () => {
+  subjects = subjects.map(s => ({
+    name: s.name || 'বিষয়',
+    total: s.total || (s.left || 0),
+    left: s.left || 0,
+    status: s.status === 'running' ? 'paused' : (s.status || 'paused')
+  }));
+  currentIndex = -1;
+  renderSubjects();
+  updateTimerDisplay();
+  // modal events
+  const authorBtn = document.getElementById('authorBtn');
+  const authorModal = document.getElementById('authorModal');
+  const closeModal = document.getElementById('closeBtn');
+  authorBtn.addEventListener('click', () => { authorModal.style.display = 'flex'; });
+  closeModal.addEventListener('click', () => { authorModal.style.display = 'none'; });
+  authorModal.addEventListener('click', (e) => { if (e.target === authorModal) authorModal.style.display = 'none'; });
+};
+window.addEventListener('beforeunload', () => { saveSubjectsToStorage(); });
+</script>
+</body>
+</html>
